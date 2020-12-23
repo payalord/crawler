@@ -1,0 +1,14 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Crawler test Response should be an html document 1`] = `
+"<!DOCTYPE html>
+    <html>
+    <body>
+    <a href=\\"https://localhost:3000/test1\\">Test Page 1</a>
+    <a href=\\"https://localhost:3000/test2\\">Test Page 2</a>
+    <a href=\\"https://example.com/test3\\">Example of External link</a>
+    <img src=\\"https://localhost:3000/image1.png\\" />
+    <img src=\\"https://localhost:3000/image2.png\\" />
+    </body>
+    </html>"
+`;

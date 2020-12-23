@@ -3,7 +3,6 @@ import Crawler from './crawler'
 import { parse } from 'node-html-parser'
 
 const app = express()
-const port = 3000
 
 Array.prototype.FilterSameOrigin = function(origin) {
     return this.filter((item) => {
@@ -29,8 +28,12 @@ String.prototype.rmQueryString = function() {
     return this.split(/[?#]/)[0]
 }
 
+const fetchImagesLinks = (root) => {
+    return root.querySelectorAll('img').map(i => i.getAttribute('src'))
+}
+
 const Action = async (origin, url, processedLinks, externalProcessedLinks) => {
-    const data = await Crawler(url && url.startsWith('http') ? url : `https://${origin}/${url}/` || origin)
+    const data = await Crawler((url && url.startsWith('http') && url) || (url && `https://${origin}/${url}/`) || origin)
     if (data) {
         const root = parse(data);
         const elements = root.querySelectorAll('a')
@@ -38,8 +41,8 @@ const Action = async (origin, url, processedLinks, externalProcessedLinks) => {
         const externalLinks = [...new Set(elements?.FilterExternalOrigin(origin))]
         externalLinks.map(i => {
             const href = i.getAttribute('href').rmQueryString()
-            if (externalProcessedLinks.findIndex(l => l.getAttribute('href').rmQueryString() === href || l.getAttribute('href').rmQueryString()+'/' === href) === -1) {
-                externalProcessedLinks.push(i)
+            if (externalProcessedLinks.findIndex(l => l.element.getAttribute('href').rmQueryString() === href || l.element.getAttribute('href').rmQueryString()+'/' === href) === -1) {
+                externalProcessedLinks.push({ element: i })
             }
         })
 
@@ -49,8 +52,8 @@ const Action = async (origin, url, processedLinks, externalProcessedLinks) => {
             links.map(async i => {
                 const href = i.getAttribute('href').rmQueryString()
                 
-                if (processedLinks.findIndex(l => l.getAttribute('href').rmQueryString() === href || l.getAttribute('href').rmQueryString()+'/' === href) === -1) {
-                    processedLinks.push(i)
+                if (processedLinks.findIndex(l => l.element.getAttribute('href').rmQueryString() === href || l.element.getAttribute('href').rmQueryString()+'/' === href) === -1) {
+                    processedLinks.push({ element: i, images: fetchImagesLinks(root)})
                     await Action(origin, href, processedLinks, externalProcessedLinks)
                 }
             })
@@ -66,7 +69,7 @@ app.get('/', async (req, res, next) => {
         await Action(req.query.origin, null, processedLinks, externalProcessedLinks)
         processedLinks.push(...externalProcessedLinks)
         console.log('Full crawl completed')
-        res.json(processedLinks.map(i => i.getAttribute('href')))
+        res.json(processedLinks.map(i => {return {location: i.element.getAttribute('href'), images: i.images}}))
         next()
     } else {
         res.json([])
@@ -74,6 +77,4 @@ app.get('/', async (req, res, next) => {
     }
 })
 
-app.listen(port, () => {
-    console.log(`Crawler server listening at http://localhost:${port}`)
-})
+export default app
