@@ -1,6 +1,6 @@
 # Simple Crawler
 
-This is a simple crawler server that can accept http request parameter as `/?origin=example.com` where `example.com` is the website domain you want to crawl. The purpose is to gather all the links on the website and internal and external (no follow by external links), along with the images available per each page. The output is JSON formatted list links/images.
+This is a simple crawler server that can accept http request parameter as `/?origin=example.com` where `example.com` is the website domain you want to crawl. The purpose is to gather all the links on the website, internal and external (no follow by external links), along with the images available per each page. The output is JSON formatted list links/images.
 
 ## Installation
 
